@@ -1,0 +1,35 @@
+Bryan Klee 0624280
+These files have not been modified in any drastic way that changes functionality.
+
+I first started with u_import(). I first check all the conditions to make sure the file being imported
+is able to be imported. If it makes it past all of the checks then it will go through the process 
+of actually being imported to our file system. It first puts the file on the directory, setting the
+appropriate fields. It then reads in an inode to use to hold to file data. I used a 1 to 1 ratio for
+file placement in the directory to inode number as every file can only have 1 inode. I then set the
+appropriate variables in inode and allocate the blocks inside the inode to hold the actual data.
+After this i write this to the disk and set a clean shutdown variable to true if it has made it this
+far, to try to help with recovery.
+
+I then went onto u_del(). I first searched to see if there was a file that was called whatever the 
+user passed to the function to be deleted. If there was then it read in it's inode and freed all of the
+blocks associated with the inode. I then changed the variables associated with inode and the directory 
+to free it up and finally wrote all of that to memory.
+
+Moving onto u_export I first made sure there wasnt a file already named that in the linux directory.
+After finding there wasnt I made sure i could open or create a file that the user wanted the data from
+our file system to go into. Making sure it could, it then wrote the files data into the linux file
+outside our file system. It did create a file and write something into the file, but it was not
+readable.
+
+Finally I got to u_fsck(). This is the one i struggled the most with. I essentially implemented a 
+function that could tell if the system was corrupt but could not recover. This was very difficult 
+i believe I at least made something that could detect if something was wrong. Such as if you press
+crtl + c during the process it will say the disk is corrupted. 
+
+
+Optional food for thought:
+The largest file would be the block size (4096) times the most amount of the blocks a file can have
+which would be 97. So 397312 B
+
+The most amount of files we could put in would be 100 - 3, since there are 100 blocks max if it is
+given that much memory minus the 3 blocks for superblock, bitmap and directory.

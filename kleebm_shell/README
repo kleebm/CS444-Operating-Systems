@@ -1,0 +1,82 @@
+= Structure of the shell
+
+The shell is (as is classic) organized into three pieces: the _tokenizer_ or
+_lexer_, the _parser_, and the _executor_. If you've taken CS445, these should
+be very familiar to you.
+
+== Lexer
+
+This is contained in `tok.h` and `tok.c`. `tok.h` defines the valid token types
+(`enum tok_t`), which correspond to symbols or words that are special to the
+shell. It also defines the interface to the lexer: `get_cur`, `get_cur_data`, and
+`advance`.
+
+- `get_cur` returns the current token category
+- `get_cur_data`, for specifically word tokens, returns the string content of
+  the token.
+- `advance` causes the lexer to consume text until a full token is
+  encountered, at which point it will return and `get_cur` and `get_cur_data`
+  will return information for the new token.
+
+In tok.c, we see the implementation of the lexer. The core interface is
+advance, which reads characters from the input stream one-by-one using
+`next_char` and `push_back`. `next_char` and `push_back` implement a single character
+of lookahead, which is used to determine the `>` vs `>>` operators and for putting
+a character back when it's determined that it is time to delimit a word or if
+`>` is seen and a `>` doesn't follow it.
+
+advance updates the `cur` variable, which is returned by `get_cur`.
+Additionally, for words, it uses prepare_data, `push_data`, and
+`terminate_data` to build the string returned by `get_cur_data`. The
+`cur_data` is owned by the lexer, and (in theory) replaced whenever advance is
+called. When the parser wants to "hold on" to a word, it needs to copy out the
+`cur_data` (usually using the `strdup` function).
+
+== Parser
+
+The parser is responsible for examining the stream of tokens returned by
+advance and building up shell command structures (defined in `shtypes.h`). The
+only interface to the parser is the parse function, which returns a `struct
+cmd*`.
+
+The grammar for the language recognized by the parser is as follows:
+
+```
+
+list ::=
+  | pipeline
+  | pipeline ";" list
+  | pipeline "&" list
+
+pipeline ::=
+  | block
+  | block "|" pipeline
+
+block ::=
+  | "{" list "}" redirs
+  | exec redirs
+
+redirs ::=
+  | "<" TOK_WORD redirs
+  | ">" TOK_WORD redirs
+  | ">>" TOK_WORD redirs
+  | /* empty string */
+
+exec ::=
+  | word exec
+  | /* empty string */
+```
+
+Implementation wise, it's a pretty boring top-down recursive descent parser.
+Each production above corresponds to a single function in `parser.c`:
+`parse_$production`. There is also some syntax-error recovery code which dumps
+tokens until either `TOK_EOI` (corresponding to a newline) or `TOK_EOF`
+(end-of-file) is encountered, at which point the parser will resume normal
+operation.
+
+== Executor
+
+This lives in `exec.c`, and is the bit you'll be writing. See the lab handout
+and the lab presentation for some instructions here. You'll need to write the
+sequence of system calls which "do the right thing" for each of the command
+types.

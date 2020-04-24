@@ -1,0 +1,9 @@
+My shell currently implements cd, pwd, exit, echo, help,history, kill and clear.
+The cd command if given no input will just print out the current directory
+It also correctly outputs the username, hostname, and login as the prompt.
+It will correctly execute a program however. I used my script.py to test the functionality of the exec command
+I got the pipe to work as 2 commands however the input transfer does not work.
+The redir and back are not implemented as well as the jobs and was not sure if kill is correctly implemented.
+The user is not prompted when they try to leave and a process is still running.
+
+The resources i used were the internet (stack overflow) and people in the ITL that provided help

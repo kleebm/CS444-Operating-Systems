@@ -1,0 +1,8 @@
+Bryan Klee 0624280
+My program has implemented grid,row and cell level locking. There are no extra
+files needed to run this. I got it to work about 60% of the time for the row
+and cell level locking. I could not figure out quite why it would work sometimes
+and not other times. I noticed when it would have 10 threads, the smaller the 
+grid got the more times it would fail. It was more consistent with lower thread
+counts. I noticed that the row level locking seemed to be more consitent than the
+cell level, especially at lower grid sizes.
